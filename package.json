@@ -1,0 +1,79 @@
+{
+  "name": "credenze",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@hookform/resolvers": "^3.6.0",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/lab": "^5.0.0-alpha.170",
+    "@mui/material": "^5.15.20",
+    "@mui/styles": "^5.15.20",
+    "@mui/x-date-pickers": "^7.7.0",
+    "@react-oauth/google": "^0.12.1",
+    "@react-pdf/renderer": "^3.4.4",
+    "@reduxjs/toolkit": "^2.2.5",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.98",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "axios": "^1.7.2",
+    "file-saver": "^2.0.5",
+    "html2pdf.js": "^0.10.1",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.5.45",
+    "react": "^18.3.1",
+    "react-countup": "^6.5.3",
+    "react-datepicker": "^7.0.0",
+    "react-dom": "^18.3.1",
+    "react-helmet": "^6.1.0",
+    "react-hook-form": "^7.51.5",
+    "react-multi-carousel": "^2.8.5",
+    "react-otp-input": "^3.1.1",
+    "react-query": "^3.39.3",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^6.23.1",
+    "react-router-sitemap": "^1.2.0",
+    "react-scripts": "^5.0.1",
+    "react-simple-star-rating": "^5.1.7",
+    "react-star-ratings": "^2.3.0",
+    "react-to-print": "^2.15.1",
+    "redux": "^5.0.1",
+    "redux-saga": "^1.3.0",
+    "sitemap-generator": "^8.5.1",
+    "socket.io-client": "^4.7.5",
+    "sort-by": "^1.2.0",
+    "source-map-explorer": "^2.5.3",
+    "typescript": "^4.9.5",
+    "web-vitals": "^4.1.1",
+    "yup": "^1.4.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
