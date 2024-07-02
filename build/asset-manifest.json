@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/static/css/main.08159c8e.css",
+    "main.js": "/static/js/main.18a0d42f.js",
+    "static/media/Banner.png": "/static/media/Banner.4f9de5db931b87c6b38e.png",
+    "static/media/Banner1.png": "/static/media/Banner1.cabec0d567317804c1e5.png",
+    "static/media/appstore.jpg": "/static/media/appstore.09c657a82b0f47e12cd0.jpg",
+    "static/media/playstore.jpg": "/static/media/playstore.3b58cb7f3ef6520ee62e.jpg",
+    "static/media/fourth.png": "/static/media/fourth.bdf4132128c48e939f6c.png",
+    "static/media/second.png": "/static/media/second.d63de16866572f959b36.png",
+    "static/media/third.png": "/static/media/third.0975b2d9f2ee07512202.png",
+    "static/media/bottom.jpg": "/static/media/bottom.5afe5e0b9e86f9b91fba.jpg",
+    "static/media/first.png": "/static/media/first.80cb0d70c43454938f8a.png",
+    "static/media/Cctv.png": "/static/media/Cctv.3c3f8ca1188375390753.png",
+    "index.html": "/index.html",
+    "main.08159c8e.css.map": "/static/css/main.08159c8e.css.map",
+    "main.18a0d42f.js.map": "/static/js/main.18a0d42f.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.08159c8e.css",
+    "static/js/main.18a0d42f.js"
+  ]
+}

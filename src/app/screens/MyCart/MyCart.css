@@ -1,0 +1,14 @@
+body {
+    background-color: #fbfbfb;
+    margin: 0; /* Reset default body margin */
+    padding: 0; /* Reset default body padding */
+}
+
+.algn {
+    text-align: -webkit-center;
+}
+
+.fgt {
+    display: -webkit-box;
+    -webkit-box-align: center;
+}

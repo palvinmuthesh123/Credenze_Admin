@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BestSeller, category, DealBox } from '../../data/raw';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Container, Grid, Paper, Rating, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import './Home.css'
 import Checkbox from '@mui/material/Checkbox';
 import Header from '../../components/header/header';
 import Footer from '../../components/footer/footer';
+import { useNavigate } from 'react-router-dom';
+import { GET_LAYOUTS } from '../../redux/apis';
+import { styled } from '@mui/system';
 
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
@@ -21,9 +24,10 @@ const useStyles = makeStyles({
     },
     titleText: {
         color: '#000000',
-        fontSize: 20,
         // fontFamily: FAMILY.SansProSemibold,
         marginBottom: HEIGHT / 100 * 1,
+        fontSize: 30,
+        display:"block",
     },
     container: {
         height: HEIGHT / 100 * 33,
@@ -70,7 +74,7 @@ const useStyles = makeStyles({
     },
     BestBox: {
         // height: HEIGHT / 100 * 25,
-        width: WIDTH / 100 * 30,
+        width: WIDTH < 400 ? WIDTH*60/100 : WIDTH / 100 * 30,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#C4C4C4',
@@ -179,7 +183,102 @@ const useStyles = makeStyles({
 });
 
 const HomePage = () => {
+    const history = useNavigate();
     const styles = useStyles();
+    const [data, setData] = useState<any[]>([])
+    const deals = [
+        { discount: '-35%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-35%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-05%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-45%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-35%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-15%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+        { discount: '-25%', image: require('../../../assets/Home/Cctv.png'), name: 'Camera Name' },
+    ];
+
+    useEffect(()=> {
+        console.log(WIDTH, HEIGHT, "OOOOOOOOOOOOOO")
+        getContents();
+    },[])
+
+    const getContents = async() => {
+        // const response = await fetch(GET_LAYOUTS)
+        const response = await fetch(GET_LAYOUTS)
+        .then(response => response.json())
+        .then(data => {console.log(data); setData(data)})
+        .catch(error => console.error(error));
+    }
+
+    const ScrollContainer = styled(Box)({
+        display: 'flex',
+        overflowX: 'scroll',
+        scrollbarWidth: 'none', // Hide scrollbar for Firefox
+        '&::-webkit-scrollbar': {
+          display: 'none', // Hide scrollbar for WebKit browsers
+        },
+        backgroundColor: "white"
+    });
+
+    const DealsAndOffers = () => {
+        return (
+          <>
+            <Grid container spacing={3} style={{backgroundColor: "white", padding: 2}}>
+              <Grid item xs={12} md={3}>
+                <Box mt={4} mb={2}>
+                    <Typography variant="h4" align="left" gutterBottom>
+                        Deals and offers
+                    </Typography>
+                    <Typography variant="subtitle1" align="left" gutterBottom>
+                        Simplify Access Elevate Security
+                    </Typography>
+                </Box>
+                <Paper elevation={0} sx={{ padding: 0, backgroundColor: "transparent"}}>
+                  <Stack direction="row" display={'flex'} justifyContent="center" spacing={0}>
+                    <Paper elevation={0} sx={{ padding: 0, color: '#fff', backgroundColor: "transparent" }}>
+                        <Grid container>
+                            <Grid item xs={2.5} style={{marginRight: '10px'}}>
+                                <Typography variant="h6" style={{backgroundColor: '#ff0000', textAlign: 'center', borderRadius: 10}}>04 Days</Typography>
+                            </Grid>
+                            <Grid item xs={2.5} style={{marginRight: '10px'}}>
+                                <Typography variant="h6" style={{backgroundColor: '#ff0000', textAlign: 'center', borderRadius: 10}}>13 Hour</Typography>
+                            </Grid>
+                            <Grid item xs={2.5} style={{marginRight: '10px'}}>
+                                <Typography variant="h6" style={{backgroundColor: '#ff0000', textAlign: 'center', borderRadius: 10}}>34 Mins</Typography>
+                            </Grid>
+                            <Grid item xs={2.5} style={{marginRight: '10px'}}>
+                                <Typography variant="h6" style={{backgroundColor: '#ff0000', textAlign: 'center', borderRadius: 10}}>56 Secs</Typography>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                  </Stack>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={9}>
+                <ScrollContainer>
+                  {deals.map((deal, index) => (
+                    <Box key={index} sx={{ minWidth: 200, mx: 1, backgroundColor:"white" }}>
+                      <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: 'white' }} onClick={()=>{history('/productlist')}}>
+                        <img
+                          src={deal.image}
+                          alt={deal.name}
+                          style={{ width: '100%', height: 'auto' }}
+                        />
+                        <Typography variant="h6" align="center">
+                          {deal.name}
+                        </Typography>
+                        <Typography variant="h5" align="center" color="error">
+                          {deal.discount}
+                        </Typography>
+                      </Paper>
+                    </Box>
+                  ))}
+                </ScrollContainer>
+              </Grid>
+            </Grid>
+          </>
+        );
+    };
+      
 
     return (
         <>
@@ -222,9 +321,6 @@ const HomePage = () => {
                             width: '100%'
                         }}>
                             <label className={styles.titleText}>Best Sellers</label>
-                            {/* <Box onClick={() => { }}>
-                                <Box component="img" src={require('../../../assets/Home/ViewAll.png')} />
-                            </Box> */}
                         </Box>
                         <Box sx={{
                             width: '100%',
@@ -235,10 +331,12 @@ const HomePage = () => {
                             '&::-webkit-scrollbar': {
                                 display: 'none',
                             },
+                            marginBottom: HEIGHT*1/100
                         }} style={{ marginTop: HEIGHT / 100 * 1.5, display: 'flex' }}>
                             {BestSeller.map((item, index) => {
                                 return (
                                     <Box 
+                                        onClick={()=>history('/productdetail')}
                                         sx={{
                                             boxShadow: 2,
                                         }}
@@ -258,16 +356,19 @@ const HomePage = () => {
                                                 src={require('../../../assets/Home/Cctv.png')} />
                                         </Box>
                                         <label className={styles.bestText1}>Category</label>
-                                        <Box style={{ height: HEIGHT / 100 * 5, }}>
+                                        <Box style={{ }}>
                                             <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
                                         </Box>
-                                        <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center', height: HEIGHT * 5 / 100 }}>
-                                            <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT * 2 / 100 }}>
+                                        <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center' }}>
+                                            <Box style={{ flexDirection: "row", alignItems: "center"}}>
                                                 <label className={styles.orgText}>₹2000</label>
                                                 <label className={styles.crsText}>₹5000</label>
                                             </Box>
-                                            <Box component="img"
-                                                src={require('../../../assets/stars.png')} />
+                                            {/* <Box component="img"
+                                                src={require('../../../assets/stars.png')} /> */}
+                                            <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
+                                                <Rating value={4} readOnly size={'small'} />
+                                            </Box>
                                             <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                                 <label className={styles.starCount}>(4.5)</label>
                                             </Box>
@@ -291,18 +392,17 @@ const HomePage = () => {
                             })}
 
                         </Box>
-                        <Box style={{
+
+                        {/* <Box style={{
                             marginTop: HEIGHT / 100 * 4, flexDirection: "row",
                             justifyContent: "space-between",
                             alignItems: "center",
                             width: '100%'
                         }}>
                             <label className={styles.titleText}>Deals & Offers</label>
-                            {/* <Box onClick={() => { }}>
-                                <Box component="img" src={require('../../../assets/Home/ViewAll.png')} />
-                            </Box> */}
-                        </Box>
-                        <Box style={{ marginTop: HEIGHT / 100 * 1.5, display: 'flex', flexDirection: 'row' }}>
+                        </Box> */}
+
+                        {/* <Box style={{ marginTop: HEIGHT / 100 * 1.5, display: 'flex', flexDirection: 'row', marginBottom: HEIGHT*5/100 }}>
                             <Box className={styles.offPart}>
                                 <label className={styles.dealTitle}>Deals and offers</label><br />
                                 <label className={styles.dealTitle1}>Simplify Access Elevate Security</label>
@@ -321,7 +421,6 @@ const HomePage = () => {
                             </Box>
                             <Box sx={{
                                 width: '100%',
-                                // height: '300px',
                                 overflow: 'auto',
                                 borderRadius: '4px',
                                 padding: '10px',
@@ -345,7 +444,6 @@ const HomePage = () => {
                                                 style={{ height: HEIGHT / 100 * 23, alignItems: "center", justifyContent: "center", marginTop: HEIGHT / 100 * 1, marginBottom: HEIGHT / 100 * 1, width: '100%' }}>
                                                 <Box
                                                     component="img"
-                                                    // resizeMode='contain'
                                                     style={{ width: '80%', height: HEIGHT * 23 / 100 }}
                                                     src={require('../../../assets/Home/Cctv.png')} />
                                             </Box>
@@ -373,26 +471,27 @@ const HomePage = () => {
                                                     component="img"
                                                     style={{ width: HEIGHT / 100 * 4, height: HEIGHT / 100 * 4 }}
                                                     src={require('../../../assets/Home/Cart.png')} />
-                                                {/* <Box
-                                                    component="img"
-                                                    style={{ width: HEIGHT / 100 * 4, height: HEIGHT / 100 * 4 }}
-                                                    src={require('../../../assets/Home/Detail.png')} /> */}
                                             </Box>
                                         </Box>
                                     )
                                 })}
                             </Box>
-                        </Box>
+                        </Box> */}
+
+                        <DealsAndOffers/>
+                        
                         <label style={{
-                            marginTop: HEIGHT / 100 * 4, color: '#000000',
-                            fontSize: 20,
+                            marginTop: HEIGHT / 100 * 4, 
+                            color: '#000000',
+                            fontSize: 30,
+                            display:"block",
                             // fontFamily:FAMILY.SansProSemibold,
                             marginBottom: HEIGHT / 100 * 1,
                         }}>Dome CCTV Cameras</label>
                         <Box style={{ marginTop: HEIGHT / 100 * 1.5, display: 'flex', flexDirection: 'row' }}>
                             <Box
                                 component="img"
-                                style={{ height: HEIGHT * 56 / 100, width: WIDTH * 20 / 100, borderRadius: 15, marginLeft: WIDTH * 1 / 100, marginRight: WIDTH * 1 / 100, marginTop: HEIGHT * 2 / 100 }}
+                                style={{ height: HEIGHT * 56 / 100, width: WIDTH < 400 ? WIDTH*60/100 : WIDTH * 20 / 100, borderRadius: 15, marginLeft: WIDTH * 1 / 100, marginRight: WIDTH * 1 / 100, marginTop: HEIGHT * 2 / 100 }}
                                 src={require('../../../assets/Home/Banner1.png')} />
                             <Box sx={{
                                 width: '100%',
@@ -407,9 +506,11 @@ const HomePage = () => {
                             }} style={{ display: 'flex' }}>
                                 {BestSeller.map((item, index) => {
                                     return (
-                                        <Box sx={{
-                                            boxShadow: 2,
-                                        }} className={styles.BestBox}>
+                                        <Box
+                                            onClick={()=>history('/productdetail')} 
+                                            sx={{
+                                                boxShadow: 2,
+                                            }} className={styles.BestBox}>
                                             <Box style={{ width: '100%', alignItems: "center", flexDirection: "row", justifyContent: "space-between", display: 'flex' }}>
                                                 <Box component="img"
                                                     src={require('../../../assets/Home/Like.png')} />
@@ -425,16 +526,19 @@ const HomePage = () => {
                                                     src={require('../../../assets/Home/Cctv.png')} />
                                             </Box>
                                             <label className={styles.bestText1}>Category</label>
-                                            <Box style={{ height: HEIGHT / 100 * 5, }}>
+                                            <Box style={{}}>
                                                 <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
                                             </Box>
-                                            <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center', height: HEIGHT * 5 / 100 }}>
-                                                <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT * 2 / 100 }}>
+                                            <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center' }}>
+                                                <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                                     <label className={styles.orgText}>₹2000</label>
                                                     <label className={styles.crsText}>₹5000</label>
                                                 </Box>
-                                                <Box component="img"
-                                                    src={require('../../../assets/stars.png')} />
+                                                {/* <Box component="img"
+                                                    src={require('../../../assets/stars.png')} /> */}
+                                                <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
+                                                    <Rating value={4} readOnly size={'small'} />
+                                                </Box>
                                                 <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                                     <label className={styles.starCount}>(4.5)</label>
                                                 </Box>
@@ -460,15 +564,17 @@ const HomePage = () => {
                         </Box>
 
                         <label style={{
-                            marginTop: HEIGHT / 100 * 4, color: '#000000',
-                            fontSize: 20,
+                            marginTop: HEIGHT / 100 * 4, 
+                            color: '#000000',
                             // fontFamily:FAMILY.SansProSemibold,
                             marginBottom: HEIGHT / 100 * 1,
+                            fontSize: 30,
+                            display:"block",
                         }}>Bullet CCTV Cameras</label>
                         <Box style={{ marginTop: HEIGHT / 100 * 1.5, display: 'flex', flexDirection: 'row' }}>
                             <Box
                                 component="img"
-                                style={{ height: HEIGHT * 56 / 100, width: WIDTH * 20 / 100, borderRadius: 15, marginLeft: WIDTH * 1 / 100, marginRight: WIDTH * 1 / 100, marginTop: HEIGHT * 2 / 100 }}
+                                style={{ height: HEIGHT * 56 / 100, width: WIDTH < 400 ? WIDTH*60/100 : WIDTH * 20 / 100, borderRadius: 15, marginLeft: WIDTH * 1 / 100, marginRight: WIDTH * 1 / 100, marginTop: HEIGHT * 2 / 100 }}
                                 src={require('../../../assets/Home/Banner1.png')} />
                             <Box sx={{
                                 width: '100%',
@@ -483,9 +589,11 @@ const HomePage = () => {
                             }} style={{ display: 'flex' }}>
                                 {BestSeller.map((item, index) => {
                                     return (
-                                        <Box sx={{
-                                            boxShadow: 2,
-                                        }} className={styles.BestBox}>
+                                        <Box 
+                                            onClick={()=>history('/productdetail')}
+                                            sx={{
+                                                boxShadow: 2,
+                                            }} className={styles.BestBox}>
                                             <Box style={{ width: '100%', alignItems: "center", flexDirection: "row", justifyContent: "space-between", display: 'flex' }}>
                                                 <Box component="img"
                                                     src={require('../../../assets/Home/Like.png')} />
@@ -501,16 +609,19 @@ const HomePage = () => {
                                                     src={require('../../../assets/Home/Cctv.png')} />
                                             </Box>
                                             <label className={styles.bestText1}>Category</label>
-                                            <Box style={{ height: HEIGHT / 100 * 5, }}>
+                                            <Box style={{}}>
                                                 <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
                                             </Box>
-                                            <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center', height: HEIGHT * 5 / 100 }}>
-                                                <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT * 2 / 100 }}>
+                                            <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center' }}>
+                                                <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                                     <label className={styles.orgText}>₹2000</label>
                                                     <label className={styles.crsText}>₹5000</label>
                                                 </Box>
-                                                <Box component="img"
-                                                    src={require('../../../assets/stars.png')} />
+                                                {/* <Box component="img"
+                                                    src={require('../../../assets/stars.png')} /> */}
+                                                <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
+                                                    <Rating value={4} readOnly size={'small'} />
+                                                </Box>
                                                 <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                                     <label className={styles.starCount}>(4.5)</label>
                                                 </Box>
@@ -536,60 +647,60 @@ const HomePage = () => {
                         </Box>
 
                         <Grid container spacing={2} className='algn' style={{marginTop: 10}}>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} lg={4}>
                                 <Box sx={{
                                             boxShadow: 2,
-                                        }} style={{ flexDirection: 'row', display: 'flex', height: HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH * 28 / 100 }}>
-                                    <Box style={{ width: WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
+                                        }} style={{ flexDirection: 'row', display: 'flex', height: WIDTH < 400 ? 'auto' : HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH < 400 ? WIDTH * 80/100 : WIDTH * 28 / 100 }}>
+                                    <Box style={{ width: WIDTH < 400 ? 'auto' : WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
                                         <Typography style={{ color: '#DE0909', fontWeight: "600", marginTop: HEIGHT * 4 / 100 }} variant="body2">Need Any Assistance ?</Typography>
                                         <Typography variant="body2">Type Hi</Typography>
                                         <Typography style={{ color: 'grey' }} variant="body1">To Get Instant Whatsapp Support</Typography>
-                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH < 400 ? 'auto' : WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <Typography style={{ color: 'white', fontSize: 11, fontWeight: '500' }}>{"Whatsapp Now -->"}</Typography>
                                         </Box>
                                     </Box>
                                     <Box
                                         component="img"
                                         src={require('../../../assets/Home/whatsapp.jpg')}
-                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH * 13 / 100 }}>
+                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH < 400 ? 'auto' : WIDTH * 13 / 100 }}>
                                     </Box>
                                 </Box>
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} lg={4}>
                                 <Box sx={{
                                             boxShadow: 2,
-                                        }} style={{ flexDirection: 'row', display: 'flex', height: HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH * 28 / 100 }}>
-                                    <Box style={{ width: WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
+                                        }} style={{ flexDirection: 'row', display: 'flex', height: WIDTH < 400 ? 'auto' : HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH < 400 ? WIDTH * 80/100 : WIDTH * 28 / 100 }}>
+                                    <Box style={{ width: WIDTH < 400 ? 'auto' : WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
                                         <Typography style={{ color: '#DE0909', fontWeight: "600", marginTop: HEIGHT * 4 / 100 }} variant="body2">Do you need in bulk?</Typography>
                                         <Typography variant="body2">We are Always There </Typography>
                                         <Typography style={{ color: 'grey' }} variant="body1">Send your Query to Help You</Typography>
-                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH < 400 ? 'auto' : WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <Typography style={{ color: 'white', fontSize: 11, fontWeight: '500' }}>{"SEND QUERY -->"}</Typography>
                                         </Box>
                                     </Box>
                                     <Box
                                         component="img"
                                         src={require('../../../assets/Home/query.jpg')}
-                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH * 13 / 100 }}>
+                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH < 400 ? 'auto' : WIDTH * 13 / 100 }}>
                                     </Box>
                                 </Box>
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} lg={4}>
                                 <Box sx={{
                                             boxShadow: 2,
-                                        }} style={{ flexDirection: 'row', display: 'flex', height: HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH * 28 / 100 }}>
-                                    <Box style={{ width: WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
+                                        }} style={{ flexDirection: 'row', display: 'flex', height: WIDTH < 400 ? 'auto' : HEIGHT * 28 / 100, backgroundColor: 'white', width: WIDTH < 400 ? WIDTH * 80/100 : WIDTH * 28 / 100 }}>
+                                    <Box style={{ width: WIDTH < 400 ? 'auto' : WIDTH * 14 / 100, marginLeft: WIDTH * 2 / 100, }}>
                                         <Typography style={{ color: '#DE0909', fontWeight: "600", marginTop: HEIGHT * 4 / 100 }} variant="body2">Don't Get Worried ?</Typography>
                                         <Typography variant="body2">Track Order</Typography>
                                         <Typography style={{ color: 'grey' }} variant="body1">Track your order Any time Any where</Typography>
-                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box style={{ backgroundColor: '#DE0909', width: WIDTH < 400 ? 'auto' : WIDTH * 8 / 100, borderRadius: "20px", marginTop: HEIGHT * 2 / 100, paddingTop: 2.9, paddingBottom: 2.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <Typography style={{ color: 'white', fontSize: 11, fontWeight: '500' }}>{"Track Now -->"}</Typography>
                                         </Box>
                                     </Box>
                                     <Box
                                         component="img"
                                         src={require('../../../assets/Home/tracks.jpg')}
-                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH * 13 / 100 }}>
+                                        style={{ height: HEIGHT * 23 / 100, width: WIDTH < 400 ? 'auto' : WIDTH * 13 / 100 }}>
                                     </Box>
                                 </Box>
                             </Grid>
