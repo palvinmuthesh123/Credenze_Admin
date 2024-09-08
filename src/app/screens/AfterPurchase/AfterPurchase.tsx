@@ -1,20 +1,82 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Container, Typography, Box, Paper, Grid, Button, Divider } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import './AfterPurchase.css'
 import Header from '../../components/header/header';
 import Footer from '../../components/footer/footer';
 import { useNavigate } from 'react-router-dom';
+import { GET_ORDERS_BY_CUSTOMER, ORDER } from '../../redux/apis';
+import Lottie from 'react-lottie';
+import * as animationData from '../../components/Lottie/noResults.json'
 
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
 
 const AfterPurchase = () => {
   const history = useNavigate();
+  const [data, setData] = useState<any>();
+
+  useEffect(() => {
+    getContents1();
+  }, [])
+
+    const getContents1 = async () => {
+        var token = localStorage.getItem('token')
+        var id = localStorage.getItem('customerId') ? localStorage.getItem('customerId') : '0'
+        await fetch(`${GET_ORDERS_BY_CUSTOMER}${id}`, {
+            method: 'GET',
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+            })
+            .then(response => {
+                console.log(response, "LLLLLLLLLLLLL");
+                return response.text();
+            })
+            .then(text => {
+                if (text) {
+                    try {
+                        return JSON.parse(text);
+                    } catch (error) {
+                        console.error("Invalid JSON:", error);
+                        return null;
+                    }
+                } else {
+                    console.warn("Empty response");
+                    return null;
+                }
+            })
+            .then(data => {
+                if (data) {
+                    console.log(data, "KKKKKKKKKKKKKKKKKKKK");
+                    setData(data);
+                } else {
+                    console.log("No data returned");
+                }
+            })
+            .catch(error => console.error("Fetch error:", error));
+    }
+
+    const defaultOptions = {
+        loop: true,
+        autoplay: true, 
+        animationData: animationData,
+        rendererSettings: {
+          preserveAspectRatio: 'xMidYMid slice'
+        }
+    };
 
   return (
     <>
-    <Header/>
+    <Header />
+    {!data ?
+    <Lottie options={defaultOptions}
+                width={WIDTH*50/100}
+                style={{flex: 1, marginTop: HEIGHT*15/100 }}
+                /> :
+    <>
     <Box style={{width: WIDTH*90/100, marginLeft: WIDTH*5/100, paddingTop: HEIGHT*5/100, borderRadius: 10, backgroundColor: 'white', marginBottom: HEIGHT*6/100, paddingBottom: HEIGHT*10/100}}>
       <img src={require('../../../assets/Home/Credenze.png')} style={{marginLeft: WIDTH*2/100, height: HEIGHT*3/100, marginBottom: HEIGHT*3/100}}/>
       <Grid container spacing={0}>
@@ -145,6 +207,7 @@ const AfterPurchase = () => {
       </Grid>
     </Box>
     <Footer />
+    </>}
     </>
   );
 };

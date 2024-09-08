@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
 
-const PriceSection: React.FC<any> = ({prop}) => {
+const PriceSection: React.FC<any> = ({prop, pass}) => {
   
   const handleClick = () => {
     prop('/mycart');
@@ -34,11 +34,15 @@ const PriceSection: React.FC<any> = ({prop}) => {
     prop('/mycart1');
   };
 
+  useEffect(()=>{
+    console.log(pass, "LLLLLLL")
+  },[])
+
   return (
     <Box sx={{ mb: 4 }}>
       <CardContent>
         <Typography variant="h3" color="error" gutterBottom>
-          ₹2000
+          {pass && pass.salePrice ? "₹"+pass.salePrice : "-"}
         </Typography>
       <Grid container spacing={2}>
           
@@ -56,10 +60,10 @@ const PriceSection: React.FC<any> = ({prop}) => {
         
           <Grid item xs={4}>
             <Typography color="success" sx={{ ml: 1 }}>
-              26% Off
+            {pass && pass.saleWarranty ? (pass.saleWarranty+"% Off") : "-"}
             </Typography>
             <Typography variant="h5" color="textSecondary" sx={{ textDecoration: 'line-through', fontWeight: "700", color:"#B6B6B6" }}>
-              ₹2520
+              {pass && pass.mrpPrice ? "₹"+pass.mrpPrice : "-"}
             </Typography>
           </Grid>
 
@@ -158,7 +162,11 @@ const AddToCartButton = () => (
   </Box>
 );
 
-const DetailPageSide: React.FC = () => {
+const DetailPageSide: React.FC<{ pass: any }> = ({pass}) => {
+
+  useEffect(()=>{
+    console.log(pass, "PPPPPPPPPPPPPPPPPPPPP")
+  },[])
 
   const history = useNavigate();
 
@@ -169,14 +177,14 @@ const DetailPageSide: React.FC = () => {
   return (
     WIDTH < 400 ? <Box sx={{ py: 4 }} maxWidth="md">
        <Card sx={{ mb: 4 }} style={{padding: WIDTH*2/100, borderRadius: 10}}>
-        <PriceSection prop={handleNavigation}/>
+        <PriceSection prop={handleNavigation} pass={pass}/>
         <EssentialCombo />
         <InstallationServices />
         <AddToCartButton />
       </Card>
     </Box> : <Container sx={{ py: 4 }} maxWidth="md">
        <Card sx={{ mb: 4 }} style={{padding: WIDTH*2/100, borderRadius: 10}}>
-        <PriceSection prop={handleNavigation}/>
+        <PriceSection prop={handleNavigation} pass={pass}/>
         <EssentialCombo />
         <InstallationServices />
         <AddToCartButton />

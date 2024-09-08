@@ -9,7 +9,7 @@ import Footer from '../../components/footer/footer';
 import FilterSidebar from '../../components/filter/filter';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
@@ -74,7 +74,7 @@ const useStyles = makeStyles({
     },
     BestBox: {
         // height: HEIGHT / 100 * 25,
-        width: WIDTH < 400 ? WIDTH*45/100 : WIDTH / 100 * 15,
+        width: WIDTH < 400 ? (WIDTH * 45 / 100) : (WIDTH / 100 * 15),
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#C4C4C4',
@@ -84,12 +84,11 @@ const useStyles = makeStyles({
         backgroundColor: 'white',
     },
     BestBoxs: {
-        // height: HEIGHT / 100 * 25,
-        width: WIDTH / 100 * 90,
+        width: WIDTH < 400 ? 'auto' : WIDTH / 100 * 60,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#C4C4C4',
-        // padding: WIDTH / 100 * 1,
+        padding: WIDTH / 100 * 1,
         marginRight: WIDTH / 100 * 2,
         flexDirection: "row",
         backgroundColor: 'white',
@@ -186,11 +185,15 @@ const useStyles = makeStyles({
 const ProductListPage = () => {
     const styles = useStyles();
     const history = useNavigate();
+    const location = useLocation();
+    const datas = location.state;
     const [data, setData] = useState(BestSeller.concat(BestSeller))
     const [sortBy, setSortBy] = React.useState<string>('Featured');
     const [itemsFound, setItemsFound] = React.useState<number>(92);
+    const [change, setChange] = useState(true);
 
-    const ProductCard: React.FC<any> = () => {
+    const ProductCard: React.FC<any> = (items) => {
+        var item = items.product
         return (
             <Box
                 sx={{
@@ -211,14 +214,14 @@ const ProductListPage = () => {
                         style={{ width: '80%', height: HEIGHT * 18 / 100, }}
                         src={require('../../../assets/Home/Cctv.png')} />
                 </Box>
-                <label className={styles.bestText1}>Category</label>
+                <label className={styles.bestText1}>Category : {item.category.categoryName}</label>
                 <Box style={{ }}>
-                    <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
+                    <label className={styles.bestText}>{item.displayName ? item.displayName : "2 MP Build-in Mic Fixed Bullet Network Camera"}</label>
                 </Box>
                 <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center"}}>
                     <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT * 2 / 100, display: 'flex' }}>
-                        <label className={styles.orgText}>₹2000</label>
-                        <label className={styles.crsText}>₹5000</label>
+                    {item.salePrice ? <label className={styles.orgText}>{item.salePrice}</label> : <label className={styles.orgText}>₹2000</label>}
+                    {item.mrpPrice ? <label className={styles.crsText}>{item.mrpPrice}</label> : <label className={styles.crsText}>₹5000</label>}
                         <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
                             <Rating value={4} readOnly size={'small'} />
                         </Box>
@@ -229,6 +232,7 @@ const ProductListPage = () => {
                 </Box>
                 <Box style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-evenly", marginTop: HEIGHT / 100 * 1, width: '100%', display: 'flex' }}>
                     <Checkbox name="antoine" {...label} />
+                    <label style={{marginRight: '10px', fontSize: 10}}>Compare</label>
                     <Box className={styles.buyBtn}>
                         <label className={styles.buyText}>Buy Now</label>
                     </Box>
@@ -237,6 +241,82 @@ const ProductListPage = () => {
                         style={{ width: HEIGHT / 100 * 4, height: HEIGHT / 100 * 4 }}
                         src={require('../../../assets/Home/Cart.png')} />
                 </Box>
+            </Box>
+        );
+    };
+
+    const ProductCard1: React.FC<any> = (items) => {
+        var item = items.product
+        return (
+            <Box
+                // onClick={nav}
+                sx={{
+                    boxShadow: 2,
+                }}
+                className={styles.BestBoxs}>
+                <Grid container spacing={4}>
+                <Grid item xs={3.5}>
+                    <Box
+                        style={{ height: HEIGHT / 100 * 25, alignItems: "center", justifyContent: "center", marginTop: HEIGHT / 100 * 1, marginBottom: HEIGHT / 100 * 1, width: '90%' }}>
+                        <Box style={{width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
+                            <Box component="img"
+                                src={require('../../../assets/hot.png')} />
+                        </Box>
+                        <Box
+                            component="img"
+                            style={{ width: '80%', height: HEIGHT * 25 / 100, }}
+                            src={require('../../../assets/Home/Cctv.png')} />
+                    </Box>
+                </Grid>
+                <Grid item xs={8.5}>
+                <Box style={{display:'flex', flexDirection: 'column'}}>
+                <Box style={{}}>
+                    <label className={styles.bestText}>{item.displayName ? item.displayName : "2 MP Build-in Mic Fixed Bullet Network Camera"}</label>
+                </Box>
+                <Box style={{ flexDirection: 'row', display: 'flex'}}>
+                    <Box style={{ flexDirection: "row"}}>
+                    {item.salePrice ? <label className={styles.orgText}>{item.salePrice}</label> : <label className={styles.orgText}>₹2000</label>}
+                    {item.mrpPrice ? <label className={styles.crsText}>{item.mrpPrice}</label> : <label className={styles.crsText}>₹5000</label>}
+                    </Box>
+                </Box>
+                <Typography style={{fontSize: 10, color:"#777777"}}>{item.shortDesc ? item.shortDesc : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I"}</Typography>
+                <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT / 100 * 1, width: '100%', display: 'flex' }}>
+                    <Box style={{ flexDirection: "row",display: 'flex',alignItems: "center", width: WIDTH < 400 ? '100%' : '25%'}}>
+                        <Checkbox name="antoine" {...label} />
+                        <Typography style={{fontSize: 11}}>Compare</Typography>
+                    </Box>
+                    {/* <Box component="img"
+                        src={require('../../../assets/stars.png')} /> */}
+                    <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
+                        <Rating value={4} readOnly size={'small'} />
+                    </Box>
+                    <Box style={{ flexDirection: "row", alignItems: "center" }}>
+                        <label className={styles.starCount}>(4.5)</label>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT / 100 * 1, width: '100%', display: 'flex' }}>
+                    <Box className={styles.buyBtn}>
+                    <Box component="img"
+                        style={{marginRight: WIDTH*0.7/100}}
+                        src={require('../../../assets/Home/buycart.png')} />
+                        <label className={styles.buyText}>BUY NOW</label>
+                    </Box>
+                    <Box style={{display: "flex", flexDirection: "row", width: WIDTH < 400 ? 200 : '' }}>
+                        <Box component="img"
+                            style={{height: HEIGHT*2/100, marginLeft: WIDTH*2/100}}
+                            src={require('../../../assets/Home/addcart.png')} />
+                        <label style={{color: "#898989", fontSize: 12, marginLeft: WIDTH*0.5/100, fontWeight: "600"}}>ADD TO CART</label>
+                    </Box>
+                    <Box style={{display: "flex", flexDirection: "row"}}>
+                        <Box component="img"
+                        style={{height: HEIGHT*2/100, marginLeft: WIDTH*2/100}}
+                            src={require('../../../assets/Home/Like.png')} />
+                        <label style={{color: "#898989", fontSize: 12, marginLeft: WIDTH*0.5/100, fontWeight: "600"}}>ADD TO FAVORITE</label>
+                    </Box>
+                </Box>
+                </Box>
+                </Grid>
+                </Grid>
             </Box>
         );
     };
@@ -258,16 +338,21 @@ const ProductListPage = () => {
                         <FilterSidebar/>
                     </Grid>
                     <Grid item xs={12} lg={8.7}>
-
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 2, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor:"#F7F7F8", marginBottom: HEIGHT*0.5/100 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Button variant="contained" color="error" sx={{ minWidth: '40px', padding: 0 }} onClick={()=>{history('/productlist')}}>
+                            <Button variant="contained" color="error" sx={{ minWidth: '40px', padding: 0 }} onClick={()=>{
+                                // history('/productlist'), { state: datas }
+                                setChange(true);
+                            }}>
                                 <ViewModuleIcon />
                             </Button>
-                            <Button variant="outlined" color="error" sx={{ minWidth: '40px', marginLeft: 1, padding: 0 }} onClick={()=>{history('/productlist1')}}>
+                            <Button variant="outlined" color="error" sx={{ minWidth: '40px', marginLeft: 1, padding: 0 }} onClick={()=>{
+                                // history('/productlist1'), { state: datas }
+                                setChange(false);
+                            }}>
                                 <ViewListIcon />
                             </Button>
-                            <Typography sx={{ marginLeft: 2 }}>We found {itemsFound} items for you!</Typography>
+                            <Typography sx={{ marginLeft: 2 }}>We found {datas.length} items for you!</Typography>
                         </Box>
                         <FormControl variant="outlined" sx={{ minWidth: 150 }}>
                             <InputLabel>Sort By</InputLabel>
@@ -281,9 +366,13 @@ const ProductListPage = () => {
                     </Box>
 
                         <Grid container spacing={4}>
-                        {data.map((product, index) => (
+                        {change ? datas.map((product: any, index: React.Key | null | undefined) => (
                             <Grid item key={index} xs={6} sm={6} md={4} lg={3} xl={3}>
                                 <ProductCard product={product} />
+                            </Grid>
+                        )): datas.map((product: any, index: React.Key | null | undefined) => (
+                            <Grid item key={index} xs={12} sm={12} md={12} lg={12} xl={12}>
+                                <ProductCard1 product={product} />
                             </Grid>
                         ))}
                         </Grid>

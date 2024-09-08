@@ -8,6 +8,8 @@ import ProductList from '../screens/ProductList/ProductList';
 import ProductList1 from '../screens/ProductList1/ProductList';
 import UserCart from '../screens/UserCart/UserCart';
 import AfterPurchase from '../screens/AfterPurchase/AfterPurchase';
+import OTPVerification from '../screens/OtpVerification/OtpVerification';
+import ProfileDetails from '../screens/ProfileDetails/ProfileDetails';
 
 const AppRouter: React.FC = () => {
   return (
@@ -21,6 +23,8 @@ const AppRouter: React.FC = () => {
         <Route path="/productlist1" Component={ProductList1} />
         <Route path="/usercart" Component={UserCart} />
         <Route path="/afterpurchase" Component={AfterPurchase} />
+        <Route path="/otpverification" Component={OTPVerification}/>
+        <Route path="/profiledetails" Component={ProfileDetails}/>
       </Routes>
     </Router>
   );

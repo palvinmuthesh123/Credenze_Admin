@@ -7,7 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Header from '../../components/header/header';
 import Footer from '../../components/footer/footer';
 import FilterSidebar from '../../components/filter/filter';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
 
@@ -185,6 +185,8 @@ const useStyles = makeStyles({
 const ProductListPage = () => {
     const styles = useStyles();
     const history = useNavigate();
+    const location = useLocation();
+    const datas = location.state;
     const [data, setData] = useState(BestSeller)
     const [sortBy, setSortBy] = React.useState<string>('Featured');
     const [itemsFound, setItemsFound] = React.useState<number>(92);
@@ -194,7 +196,12 @@ const ProductListPage = () => {
         history('/productdetail')
     }
 
-    const ProductCard: React.FC<any> = () => {
+    useEffect(()=> {
+        console.log(datas, "PASS........................")
+    },[])
+
+    const ProductCard: React.FC<any> = (items) => {
+        var item = items.product
         return (
             <Box
                 onClick={nav}
@@ -219,15 +226,15 @@ const ProductListPage = () => {
                 <Grid item xs={8.5}>
                 <Box style={{display:'flex', flexDirection: 'column'}}>
                 <Box style={{}}>
-                    <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
+                    <label className={styles.bestText}>{item.displayName ? item.displayName : "2 MP Build-in Mic Fixed Bullet Network Camera"}</label>
                 </Box>
                 <Box style={{ flexDirection: 'row', display: 'flex'}}>
                     <Box style={{ flexDirection: "row"}}>
-                        <label className={styles.orgText}>₹2000</label>
-                        <label className={styles.crsText}>₹5000</label>
+                    {item.salePrice ? <label className={styles.orgText}>{item.salePrice}</label> : <label className={styles.orgText}>₹2000</label>}
+                    {item.mrpPrice ? <label className={styles.crsText}>{item.mrpPrice}</label> : <label className={styles.crsText}>₹5000</label>}
                     </Box>
                 </Box>
-                <Typography style={{fontSize: 10, color:"#777777"}}>{"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I"}</Typography>
+                <Typography style={{fontSize: 10, color:"#777777"}}>{item.shortDesc ? item.shortDesc : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not on ly five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I"}</Typography>
                 <Box style={{ flexDirection: "row", alignItems: "center", marginTop: HEIGHT / 100 * 1, width: '100%', display: 'flex' }}>
                     <Box style={{ flexDirection: "row",display: 'flex',alignItems: "center", width: WIDTH < 400 ? '100%' : '25%'}}>
                         <Checkbox name="antoine" {...label} />
@@ -288,10 +295,10 @@ const ProductListPage = () => {
                     <Grid item xs={12} lg={8.7}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 2, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor:"#F7F7F8", marginBottom: HEIGHT*0.5/100 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center',}}>
-                            <Button variant="outlined" color="error" sx={{ minWidth: '40px', padding: 0 }} onClick={()=>{history('/productlist')}}>
+                            <Button variant="outlined" color="error" sx={{ minWidth: '40px', padding: 0 }} onClick={()=>{history('/productlist', { state: datas })}}>
                                 <ViewModuleIcon />
                             </Button>
-                            <Button variant="contained" color="error" sx={{ minWidth: '40px', marginLeft: 1, padding: 0 }} onClick={()=>{history('/productlist1')}}>
+                            <Button variant="contained" color="error" sx={{ minWidth: '40px', marginLeft: 1, padding: 0 }} onClick={()=>{history('/productlist1', { state: datas })}}>
                                 <ViewListIcon />
                             </Button>
                             <Typography sx={{ marginLeft: 2, display: "block" }}>We found {itemsFound} items for you!</Typography>
@@ -308,7 +315,7 @@ const ProductListPage = () => {
                     </Box>
 
                     <Grid container spacing={4}>
-                    {data.map((product, index) => (
+                    {datas && datas.map((product: any, index: React.Key | null | undefined) => (
                         <Grid item key={index} xs={12} sm={12} md={12} lg={12} xl={12}>
                             <ProductCard product={product} />
                         </Grid>

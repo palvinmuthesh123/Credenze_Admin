@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Grid,
@@ -24,7 +24,8 @@ import {
     Checkbox,
     Accordion,
     AccordionDetails,
-    AccordionSummary
+    AccordionSummary,
+    Input
 } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -40,7 +41,8 @@ import { makeStyles } from '@mui/styles';
 import Footer from '../../components/footer/footer';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonIcon from '@mui/icons-material/Person';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { GET_PRODUCT_BY_ID, GET_PRODUCT_BY_PINCODE, GET_PRODUCT_REVIEWS_BY_PRODUCT, PRODUCT_REVIEW } from '../../redux/apis';
 
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
@@ -105,7 +107,7 @@ const useStyles = makeStyles({
     },
     BestBox: {
         // height: HEIGHT / 100 * 25,
-        width: WIDTH < 400 ? WIDTH*60/100 : WIDTH / 100 * 15,
+        width: WIDTH < 400 ? WIDTH * 60 / 100 : WIDTH / 100 * 15,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#C4C4C4',
@@ -216,13 +218,20 @@ const useStyles = makeStyles({
 const ProductDetail: React.FC = () => {
     const styles = useStyles();
     const history = useNavigate();
+    const location = useLocation();
+    const [data, setData] = useState(location.state);
     const [image1, setImage1] = useState([
         require('../../../assets/first.png'),
         require('../../../assets/second.png'),
         require('../../../assets/third.png'),
         require('../../../assets/fourth.png'),
     ])
+    const [pincode, setPincode] = useState('');
+    const [pinCodeData, setPinCodeData] = useState<any>();
     const [ind, setInd] = useState(0);
+    const [value, setValue] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+
     const reviews = [
         {
             name: 'Srilipi Aditya Kashyap',
@@ -293,12 +302,127 @@ const ProductDetail: React.FC = () => {
         setTabIndex(newValue);
     };
 
+    const handleRatingChange = (event: any, newValue: any) => {
+        setValue(newValue);
+        console.log('Selected Rating:', newValue); // You can use this value as needed
+    };
+
+    useEffect(() => {
+        console.log(data, "DDDDDDDDDDDDD")
+        getProducts(data?.productId);
+        getContents(data?.productId);
+    }, [])
+
+    const getContents = async (val: any) => {
+        console.log(val, "VVVVVVVVVVVVVVV")
+        if (val) {
+            var id = val.toString();
+            console.log(id, "NNNNNNNNNNNNNNNNNNNNNNNNN")
+            const response = await fetch(`${GET_PRODUCT_REVIEWS_BY_PRODUCT}${id}`)
+                .then(response => {
+                    console.log(response, "LLLLLLLLLLLLL");
+                    return response.text();
+                })
+                .then(text => {
+                    if (text) {
+                        try {
+                            return JSON.parse(text);
+                        } catch (error) {
+                            console.error("Invalid JSON:", error);
+                            return null;
+                        }
+                    } else {
+                        console.warn("Empty response");
+                        return null;
+                    }
+                })
+                .then(data => {
+                    if (data) {
+                        console.log(data, "KKKKKKKKKKKKKKKKKKKK");
+                    } else {
+                        console.log("No data returned");
+                    }
+                })
+                .catch(error => console.error("Fetch error:", error));
+        }
+    }
+
+    const getProducts = async (val: any) => {
+        const response = await fetch(`${GET_PRODUCT_BY_ID}${val}`);
+        const datas = await response.json()
+        setData(datas);
+        console.log(datas, "DDDDDDDDDDDDDDDD")
+    }
+
+    const postContents = async () => {
+
+        var token = localStorage.getItem('token')
+        var custId = localStorage.getItem('customerId');
+
+        let params = {
+            productId: data?.productId,
+            customerId: custId,
+            rating: value,
+            reviewHeadline: reviewText,
+            reviewText: reviewText,
+        }
+
+        await fetch(PRODUCT_REVIEW, {
+            method: 'POST',
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(params),
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+            .then(result => {
+                console.log(result, "RES............")
+            })
+            .catch(error => console.error(error));
+    }
+
+    const getProdByPincode = async () => {
+        await fetch(`${GET_PRODUCT_BY_PINCODE}${data?.productId}&pinCode=${pincode}`, {
+            method: 'GET'
+        })
+            .then(response => {
+                console.log(response, "LLLLLLLLLLLLL");
+                return response.text();
+            })
+            .then(text => {
+                if (text) {
+                    try {
+                        return JSON.parse(text);
+                    } catch (error) {
+                        console.error("Invalid JSON:", error);
+                        return null;
+                    }
+                } else {
+                    console.warn("Empty response");
+                    return null;
+                }
+            })
+            .then(data => {
+                if (data) {
+                    console.log(data, "KKKKKKKKKKKKKKKKKKKK");
+                    setPinCodeData(data);
+                } else {
+                    console.log("No data returned");
+                }
+            })
+            .catch(error => console.error("Fetch error:", error));
+    }
+
     return (
         <>
             <Header />
-
             <Box style={{ width: WIDTH * 90 / 100, marginLeft: WIDTH * 5 / 100 }}>
-                
                 <Box display={'flex'} flexDirection={'row'}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} lg={8}>
@@ -307,7 +431,13 @@ const ProductDetail: React.FC = () => {
                                     <Grid item xs={12} md={6}>
                                         <Box sx={{ position: 'relative' }}>
                                             <img
-                                                src={image1[ind]}
+                                                src={
+                                                    (data && data.productImageUrl) ?
+                                                        data.productImageUrl :
+                                                        (data && data.productImages && data.productImages[ind] && data.productImages[ind].imageUrl) ?
+                                                            data.productImages[ind].imageUrl :
+                                                            image1[ind]
+                                                }
                                                 alt="Main Product"
                                                 style={{ width: '100%', borderRadius: 4 }}
                                             />
@@ -320,20 +450,36 @@ const ProductDetail: React.FC = () => {
                                                         <ArrowBackIosIcon />
                                                     </IconButton>
                                                 </Grid>
-                                                {image1.map((src, index) => (
-                                                    <Grid item key={index} style={{display: "flex", alignItems: 'center', justifyContent: 'center'}} onClick={() => { setInd(index) }}>
-                                                        <img
-                                                            src={src}
-                                                            alt={`Thumbnail ${index + 1}`}
-                                                            style={{
-                                                                width: 92,
-                                                                height: 92,
-                                                                borderRadius: 4,
-                                                                border: '1px solid #ccc',
-                                                            }}
-                                                        />
-                                                    </Grid>
-                                                ))}
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        overflowX: 'auto', // Enable horizontal scrolling
+                                                        gap: 2, // Spacing between grid items
+                                                        '&::-webkit-scrollbar': {
+                                                        height: '8px', // Optional: Custom scrollbar styling
+                                                        },
+                                                        '&::-webkit-scrollbar-thumb': {
+                                                        backgroundColor: '#888',
+                                                        borderRadius: '10px',
+                                                        },
+                                                    }}
+                                                    >
+                                                {data && data.productImages && data.productImages.length != 0 ?
+                                                    data.productImages.map((src: any, index: any) => (
+                                                        <Grid item key={index} style={{ display: "flex", alignItems: 'center', justifyContent: 'center', }} onClick={() => { setInd(index) }}>
+                                                            <img
+                                                                src={data.productImages[index].imageUrl}
+                                                                alt={`Thumbnail ${index + 1}`}
+                                                                style={{
+                                                                    width: 92,
+                                                                    height: 92,
+                                                                    borderRadius: 4,
+                                                                    border: '1px solid #ccc',
+                                                                }}
+                                                            />
+                                                        </Grid>
+                                                    )) : null}
+                                                </Box>
                                                 <Grid item>
                                                     <IconButton>
                                                         <ArrowForwardIosIcon />
@@ -421,7 +567,7 @@ const ProductDetail: React.FC = () => {
                                         <Box sx={{ alignItems: 'center' }}>
                                             <Chip label="Sale Off" style={{ marginBottom: '10px', backgroundColor: '#FDE0E9', color: "#F74B81" }} />
                                             <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: "black" }}>
-                                                8MP Outdoor AI Surveillance Camera
+                                                {data.displayName ? data.displayName : "8MP Outdoor AI Surveillance Camera"}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
@@ -461,11 +607,20 @@ const ProductDetail: React.FC = () => {
                                                 '& .MuiInputBase-input': {
                                                     height: '15px',
                                                 },
-                                            }} label="Enter Your Pin Code" />
-                                            <Button variant="contained" color="primary" style={{ height: 45 }}>
+                                            }} value={pincode} onChange={(event)=>{setPincode(event.target.value); setPinCodeData(null)}} label="Enter Your Pin Code" />
+                                            <Button onClick={()=>{getProdByPincode();}} variant="contained" color="primary" style={{ height: 45 }}>
                                                 CHECK
                                             </Button>
                                         </Box>
+                                        {pinCodeData ? 
+                                        <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                                            <Button variant="outlined" color="primary" style={pinCodeData && pinCodeData.codAvailable ? { width: 'auto', justifyContent: "flex-start", backgroundColor: "#F6FFF5"} : {width: 'auto', justifyContent: "flex-start", backgroundColor: "#FDE0E9", marginTop: HEIGHT * 2 / 100}}>
+                                                <Typography style={pinCodeData && pinCodeData.codAvailable ? { fontSize: 10, display: "block", color: "#3BB77E", fontWeight: "700" } : { fontSize: 10, display: "block", color: "#f74b81", fontWeight: "700" }} className='algn1'>{pinCodeData && pinCodeData.codAvailable ? "AVAILABLE" : "NOT AVAILABLE"}</Typography>
+                                            </Button>
+                                            {pinCodeData && pinCodeData.estimatedDeleivery ? <Button variant="outlined" color="primary" style={{ width: 'auto', justifyContent: "flex-start", backgroundColor: "#F6FFF5"}}>
+                                                <Typography style={{ fontSize: 10, display: "block", color: "#3BB77E", fontWeight: "700" }} className='algn1'>Available between {pinCodeData.estimatedDeleivery}</Typography>
+                                            </Button> : null}
+                                        </Box> : null}
                                         <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                                             <Button variant="outlined" color="primary" style={{ width: 'auto', justifyContent: "flex-start", backgroundColor: "#F6FFF5" }}>
                                                 <img
@@ -485,15 +640,24 @@ const ProductDetail: React.FC = () => {
                                             </Button>
                                         </Box>
                                         <Typography variant="body1" sx={{ mt: 3 }}>
-                                            The Surveillance Camera is a state-of-the-art CCTV solution designed to provide comprehensive security
+                                            {data && data.shortDesc ? data.shortDesc : `The Surveillance Camera is a state-of-the-art CCTV solution designed to provide comprehensive security
                                             monitoring for both residential and commercial properties. With its advanced features and robust
-                                            construction, this camera ensures reliable performance and peace of mind.
+                                            construction, this camera ensures reliable performance and peace of mind.`}
                                         </Typography>
                                         <Typography variant="h6" component="h3" sx={{ mt: 3 }}>
                                             Key Features
                                         </Typography>
                                         <List sx={{ padding: 0 }}>
-                                            {[
+                                            {data && data.productKeyFeatures && data.productKeyFeatures.length != 0 ? data.productKeyFeatures.map((feature: any, index: any) => (
+                                                <ListItem key={index}>
+                                                    <img
+                                                        src={require('../../../assets/checkcircle.png')}
+                                                        alt="tick"
+                                                        style={{ marginRight: '10px' }}
+                                                    />
+                                                    <Typography variant="body2">{feature.keyFeatureText}</Typography>
+                                                </ListItem>
+                                            )) : [
                                                 'High Resolution',
                                                 'Weatherproofing',
                                                 'Infrared Night Vision',
@@ -547,10 +711,9 @@ const ProductDetail: React.FC = () => {
                                     </Grid>
                                 </Grid>
                             </Paper>
-
                         </Grid>
                         <Grid item xs={12} lg={4} style={{ marginTop: -HEIGHT * 3.5 / 100, padding: 0 }}>
-                            <DetailPageSide />
+                            <DetailPageSide pass={data} />
                         </Grid>
                     </Grid>
                 </Box>
@@ -586,96 +749,119 @@ const ProductDetail: React.FC = () => {
                                 <Typography variant="h5" gutterBottom style={{ fontWeight: "700", marginTop: '20px' }}>
                                     Key Features
                                 </Typography>
-                                <List sx={{
-                                    padding: 0,
-                                }}>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
+                                {data &&
+                                    data.productKeyFeatures &&
+                                    data.productKeyFeatures.length != 0 ?
+                                    data.productKeyFeatures.map((feature: any, index: any) => (
+                                        <ListItem key={index} sx={{
+                                            padding: 0,
+                                        }}>
+                                            <Typography variant="body2">{(index + 1) + ". " + feature.keyFeatureText}</Typography>
+                                        </ListItem>
+                                    ))
+                                    :
+                                    <List sx={{
+                                        padding: 0,
                                     }}>
-                                        <ListItemText primary="1. High Definition Video: Capture crisp and clear footage in stunning high definition, allowing for accurate identification of subjects and incidents." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="2. Night Vision: Equipped with infrared LEDs, this camera delivers exceptional night vision capabilities, ensuring round-the-clock surveillance even in low-light conditions." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="3. Wide-Angle Lens: The wide-angle lens provides extensive coverage, reducing blind spots and maximizing surveillance area." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="4. Motion Detection: Detects motion within its field of view and triggers instant alerts, keeping you informed of any suspicious activity in real-time." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="5. Weatherproof Design: Built to withstand harsh weather conditions, this camera is suitable for both indoor and outdoor installations, ensuring reliable performance in any environment." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="6. Remote Viewing: Access live footage and recordings from anywhere using a smartphone, tablet, or computer, providing convenient monitoring on the go." />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="7. Easy Installation: Simple to set up and configure, allowing for hassle-free installation by users of all skill levels." />
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="8. Secure Storage: Supports various storage options, including local storage via SD card and cloud storage, ensuring secure retention of footage for future reference." />
-                                    </ListItem>
-                                </List>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="1. High Definition Video: Capture crisp and clear footage in stunning high definition, allowing for accurate identification of subjects and incidents." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="2. Night Vision: Equipped with infrared LEDs, this camera delivers exceptional night vision capabilities, ensuring round-the-clock surveillance even in low-light conditions." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="3. Wide-Angle Lens: The wide-angle lens provides extensive coverage, reducing blind spots and maximizing surveillance area." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="4. Motion Detection: Detects motion within its field of view and triggers instant alerts, keeping you informed of any suspicious activity in real-time." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="5. Weatherproof Design: Built to withstand harsh weather conditions, this camera is suitable for both indoor and outdoor installations, ensuring reliable performance in any environment." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="6. Remote Viewing: Access live footage and recordings from anywhere using a smartphone, tablet, or computer, providing convenient monitoring on the go." />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="7. Easy Installation: Simple to set up and configure, allowing for hassle-free installation by users of all skill levels." />
+                                        </ListItem>
+                                        <ListItem>
+                                            <ListItemText primary="8. Secure Storage: Supports various storage options, including local storage via SD card and cloud storage, ensuring secure retention of footage for future reference." />
+                                        </ListItem>
+                                    </List>
+                                }
                                 <Typography variant="h5" gutterBottom style={{ fontWeight: "700", marginTop: '20px' }}>
                                     Technical Specifications
                                 </Typography>
-                                <List>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Resolution: 1080p Full HD" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Lens: Wide-angle lens" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Night Vision Range: Up to 30 meters" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Motion Detection Range: Adjustable" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Connectivity: Wi-Fi, Ethernet" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Power Supply: DC 12V" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Operating Temperature: -20°C to 50°C" />
-                                    </ListItem>
-                                    <ListItem sx={{
-                                        marginBottom: -3,
-                                    }}>
-                                        <ListItemText primary="• Dimensions: (L x W x H) 150mm x 80mm x 70mm" />
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="• Weight: 300g" />
-                                    </ListItem>
-                                </List>
+                                {data &&
+                                    data.productSpecifications &&
+                                    data.productSpecifications.length !== 0 ?
+                                    data.productSpecifications.map((item: { specificationLabelName: string; specificationLabelText: string; }, index: React.Key | null | undefined) => (
+                                        <ListItem key={index} sx={{ padding: 0 }}>
+                                            <Typography variant="body2">
+                                                {"• " + item.specificationLabelName + ": " + item.specificationLabelText}
+                                            </Typography>
+                                        </ListItem>
+                                    ))
+                                    :
+                                    <List>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Resolution: 1080p Full HD" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Lens: Wide-angle lens" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Night Vision Range: Up to 30 meters" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Motion Detection Range: Adjustable" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Connectivity: Wi-Fi, Ethernet" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Power Supply: DC 12V" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Operating Temperature: -20°C to 50°C" />
+                                        </ListItem>
+                                        <ListItem sx={{
+                                            marginBottom: -3,
+                                        }}>
+                                            <ListItemText primary="• Dimensions: (L x W x H) 150mm x 80mm x 70mm" />
+                                        </ListItem>
+                                        <ListItem>
+                                            <ListItemText primary="• Weight: 300g" />
+                                        </ListItem>
+                                    </List>}
                                 <Typography variant="h5" gutterBottom style={{ fontWeight: "700", marginTop: '20px' }}>
                                     Download Center
                                 </Typography>
@@ -717,6 +903,7 @@ const ProductDetail: React.FC = () => {
                                 </Typography>
                             </Box>
                         )}
+
                     </CardContent>
                 </Card>
 
@@ -724,8 +911,8 @@ const ProductDetail: React.FC = () => {
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Typography>Reviews & Ratings</Typography>
                     </AccordionSummary>
-                    <AccordionDetails style={{padding: 0}}>
-                        <Card variant="outlined" style={{ borderRadius: 10, padding: WIDTH * 3 / 100}}>
+                    <AccordionDetails style={{ padding: 0 }}>
+                        <Card variant="outlined" style={{ borderRadius: 10, padding: WIDTH * 3 / 100 }}>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} sm={7} md={6}>
                                     <Box display="flex">
@@ -838,18 +1025,24 @@ const ProductDetail: React.FC = () => {
                                             </Grid>
                                         </Box>
                                     </Box>
-                                    {/* <Box ml={2}>
-                                        <Typography variant="body1">130 Ratings</Typography>
-                                    </Box> */}
                                 </Grid>
                                 <Grid item xs={12} sm={5} md={4}>
                                     <Box style={{ justifyContent: "flex-start" }}>
                                         <Typography variant="body1" style={{ marginTop: '10px' }}>Do you own or have used the product?</Typography>
-                                        <Typography variant='body2' style={{ marginTop: '10px', color: "#9E9E9E" }}>Tell your experience about this product</Typography>
+                                        <Input onChange={(event) => { setReviewText(event.target.value); }} style={{ marginTop: '10px', color: "#9E9E9E", width: WIDTH * 18 / 100 }} placeholder='Tell your experience about this product' />
                                         <Box display="flex" alignItems="center" style={{ marginTop: '10px', marginLeft: '0px' }}>
-                                            <Rating value={0} precision={1} />
+                                            <Rating
+                                                name="rating"
+                                                value={value}
+                                                precision={1}
+                                                onChange={handleRatingChange} />
                                         </Box>
-                                        <Button variant="contained" color="primary" sx={{ ml: 2 }} style={{ marginTop: '10px', marginLeft: '0px', backgroundColor: "#EC0000" }}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            sx={{ ml: 2 }}
+                                            style={{ marginTop: '10px', marginLeft: '0px', backgroundColor: "#EC0000" }}
+                                            onClick={() => { postContents(); }}>
                                             WRITE A REVIEW
                                         </Button>
                                     </Box>
@@ -863,9 +1056,9 @@ const ProductDetail: React.FC = () => {
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Typography>All Reviews (132)</Typography>
                     </AccordionSummary>
-                    <AccordionDetails style={{padding: 0}}>
+                    <AccordionDetails style={{ padding: 0 }}>
                         {reviews.map((review, index) => (
-                            <Paper key={index} sx={{ p: 3, my: 2, borderRadius: 2}}>
+                            <Paper key={index} sx={{ p: 3, my: 2, borderRadius: 2 }}>
                                 <Grid container spacing={2}>
                                     <Grid item>
                                         <Avatar>{review.name.charAt(0)}</Avatar>
@@ -878,9 +1071,9 @@ const ProductDetail: React.FC = () => {
                                                 <Button startIcon={<ThumbDownAltOutlinedIcon />} size="small" sx={{ ml: 2 }}>20</Button>
                                             </Box>
                                         </Box>
-                                        <Box display="flex" style={{marginBottom: HEIGHT*0.5/100}}>
-                                            <Typography variant="body2" color="textSecondary" style={{marginRight: WIDTH*2/100, color: "#EC0000"}}>{review.date}</Typography>
-                                            <Typography variant="body2" color="textSecondary" style={{color: "#3BB77E"}}>Verified Purchase</Typography>
+                                        <Box display="flex" style={{ marginBottom: HEIGHT * 0.5 / 100 }}>
+                                            <Typography variant="body2" color="textSecondary" style={{ marginRight: WIDTH * 2 / 100, color: "#EC0000" }}>{review.date}</Typography>
+                                            <Typography variant="body2" color="textSecondary" style={{ color: "#3BB77E" }}>Verified Purchase</Typography>
                                         </Box>
                                         <Box display="flex" alignItems="center">
                                             <Rating value={review.rating} readOnly />
@@ -895,12 +1088,12 @@ const ProductDetail: React.FC = () => {
                 </Accordion>
 
                 <Box mt={4}>
-                    <Typography variant="h5" gutterBottom style={{marginBottom: HEIGHT*3/100}}>
+                    <Typography variant="h5" gutterBottom style={{ marginBottom: HEIGHT * 3 / 100 }}>
                         Accessories for your product
                     </Typography>
-                    <Grid container spacing={2} style={{marginBottom: HEIGHT*10/100}}>
+                    <Grid container spacing={2} style={{ marginBottom: HEIGHT * 10 / 100 }}>
                         {accessories.map((accessory, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={2.3} key={index} style={{alignItems: 'center', justifyContent: 'center', display: 'flex'}}>
+                            <Grid item xs={12} sm={6} md={4} lg={2.3} key={index} style={{ alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
                                 <Box
                                     sx={{
                                         boxShadow: 2,
@@ -921,7 +1114,7 @@ const ProductDetail: React.FC = () => {
                                             src={require('../../../assets/Home/Cctv.png')} />
                                     </Box>
                                     <label className={styles.bestText1}>Category</label>
-                                    <Box style={{ }}>
+                                    <Box style={{}}>
                                         <label className={styles.bestText}>2 MP Build-in Mic Fixed Bullet Network Camera</label>
                                     </Box>
                                     <Box style={{ flexDirection: 'row', display: 'flex', alignItems: "center", justifyContent: 'center' }}>
@@ -930,8 +1123,8 @@ const ProductDetail: React.FC = () => {
                                             <label className={styles.crsText}>₹5000</label>
                                         </Box>
                                         <Box sx={{ '& .MuiRating-icon': { fontSize: 10 } }}>
-                                                    <Rating value={4} readOnly size={'small'} />
-                                                </Box>
+                                            <Rating value={4} readOnly size={'small'} />
+                                        </Box>
                                         {/* <Box component="img" src={require('../../../assets/stars.png')} /> */}
                                         <Box style={{ flexDirection: "row", alignItems: "center" }}>
                                             <label className={styles.starCount}>(4.5)</label>
@@ -952,7 +1145,7 @@ const ProductDetail: React.FC = () => {
                         ))}
                     </Grid>
                 </Box>
-                
+
             </Box>
 
             <Footer />

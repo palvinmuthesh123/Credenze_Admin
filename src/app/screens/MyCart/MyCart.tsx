@@ -1,5 +1,5 @@
 // App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Paper, List, ListItem, ListItemText, Avatar, Typography, TextField, Button, Grid, Divider } from '@mui/material';
 import OrderSummary from '../../components/OrderSummary/OrderSummary';
 import { Container } from '@mui/material';
@@ -8,9 +8,13 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import Header from '../../components/header/header';
 import Footer from '../../components/footer/footer';
 import './MyCart.css'
+import { GET_CART_BY_CUSTOMER } from '../../redux/apis';
+import Lottie from 'react-lottie';
+import * as animationData from '../../components/Lottie/noResults.json'
 
 const HEIGHT = window.innerHeight
 const WIDTH = window.innerWidth
+
 const CartItems = () => (
   <Box>
     <Paper elevation={3} sx={{ borderRadius: 2, padding: 2.5 }} style={{marginTop: 25, height: WIDTH < 400 ? 'auto' : HEIGHT*60/100}}>
@@ -115,15 +119,78 @@ const CartItems = () => (
   </Box>
 );
 
-const MyCart = () => (
+const MyCart = () => {
 
+  const [data, setData] = useState<any>();
+
+    useEffect(() => {
+        getContents();
+    }, [])
+
+    const getContents = async () => {
+      var custId = localStorage.getItem('customerId') ? localStorage.getItem('customerId') : '0'
+      var token = localStorage.getItem('token')
+
+      console.log(token, "TTTTTTTTTTTTTTT")
+
+        const response = await fetch(`${GET_CART_BY_CUSTOMER}${custId}`, {
+          method: 'GET',
+          headers: {
+            // 'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          }
+        })
+        .then(response => {
+          console.log(response, "LLLLLLLLLLLLL");
+          return response.text();
+        })
+        .then(text => {
+          if (text) {
+            try {
+              return JSON.parse(text);
+            } catch (error) {
+              console.error("Invalid JSON:", error);
+              return null;
+            }
+          } else {
+            console.warn("Empty response");
+            return null;
+          }
+        })
+        .then(data => {
+          if (data) {
+            console.log(data, "KKKKKKKKKKKKKKKKKKKK");
+            setData(data);
+          } else {
+            console.log("No data returned");
+          }
+        })
+        .catch(error => console.error("Fetch error:", error));   
+    }
+
+    const defaultOptions = {
+      loop: true,
+      autoplay: true, 
+      animationData: animationData,
+      rendererSettings: {
+        preserveAspectRatio: 'xMidYMid slice'
+      }
+    };
+
+  return (
   <>
-    <Header />
-      <Box style={{width: WIDTH*90/100, marginLeft: WIDTH*5/100}}>
+  <Header />
+  {!data ?
+  <Lottie options={defaultOptions}
+              // height={HEIGHT*70/100}
+              width={WIDTH*50/100}
+              style={{flex: 1, marginTop: HEIGHT*15/100 }}
+              /> :
+    <><Box style={{width: WIDTH*90/100, marginLeft: WIDTH*5/100}}>
         <Typography variant="h6">
             My Cart
         </Typography>
-        {/* <Container> */}
           <Grid container spacing={2}>
             <Grid item xs={12} md={8}>
               <CartItems />
@@ -132,10 +199,11 @@ const MyCart = () => (
               <OrderSummary />
             </Grid>
           </Grid>
-        {/* </Container> */}
       </Box>
     <Footer />
-  </>
-);
+    </>}
+    </>
+)
+}
 
 export default MyCart;
